@@ -118,11 +118,12 @@ def poem_upsert(data: dict) -> int:
     cols = ", ".join(vals.keys())
     placeholders = ", ".join("?" for _ in vals)
     updates = ", ".join(f"{k} = excluded.{k}" for k in vals if k != "url")
+    conflict = f"DO UPDATE SET {updates}" if updates else "DO NOTHING"
 
     with get_db() as conn:
         cur = conn.execute(
             f"INSERT INTO poems ({cols}) VALUES ({placeholders}) "
-            f"ON CONFLICT(url) DO UPDATE SET {updates}",
+            f"ON CONFLICT(url) {conflict}",
             list(vals.values()),
         )
         conn.commit()
@@ -185,11 +186,12 @@ def source_upsert(data: dict) -> int:
     cols = ", ".join(vals.keys())
     placeholders = ", ".join("?" for _ in vals)
     updates = ", ".join(f"{k} = excluded.{k}" for k in vals if k != "url")
+    conflict = f"DO UPDATE SET {updates}" if updates else "DO NOTHING"
 
     with get_db() as conn:
         cur = conn.execute(
             f"INSERT INTO sources ({cols}) VALUES ({placeholders}) "
-            f"ON CONFLICT(url) DO UPDATE SET {updates}",
+            f"ON CONFLICT(url) {conflict}",
             list(vals.values()),
         )
         conn.commit()
